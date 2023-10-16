@@ -96,7 +96,7 @@ class Learner(BaseLearner):
             scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
             # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
 
-            for epoch in range(2*self.args["tuned_epoch"]):
+            for epoch in range(self.args["tuned_epoch"]):
                 for i, batch in enumerate(trainloader):
                     (_,data,label)=batch
                     data=data.cuda()
