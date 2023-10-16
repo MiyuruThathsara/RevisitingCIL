@@ -1,0 +1,21 @@
+2023-10-13 23:29:20,435 [trainer.py] => config: ./exps/adam_vpt_deep.json
+2023-10-13 23:29:20,435 [trainer.py] => prefix:  
+2023-10-13 23:29:20,435 [trainer.py] => dataset: cifar224
+2023-10-13 23:29:20,435 [trainer.py] => memory_size: 0
+2023-10-13 23:29:20,435 [trainer.py] => memory_per_class: 0
+2023-10-13 23:29:20,435 [trainer.py] => fixed_memory: False
+2023-10-13 23:29:20,435 [trainer.py] => shuffle: True
+2023-10-13 23:29:20,435 [trainer.py] => init_cls: 10
+2023-10-13 23:29:20,435 [trainer.py] => increment: 10
+2023-10-13 23:29:20,435 [trainer.py] => model_name: adam_vpt
+2023-10-13 23:29:20,435 [trainer.py] => convnet_type: pretrained_vit_b16_224_in21k_vpt
+2023-10-13 23:29:20,435 [trainer.py] => device: [device(type='cuda', index=0)]
+2023-10-13 23:29:20,435 [trainer.py] => seed: 1993
+2023-10-13 23:29:20,435 [trainer.py] => tuned_epoch: 20
+2023-10-13 23:29:20,435 [trainer.py] => init_lr: 0.01
+2023-10-13 23:29:20,435 [trainer.py] => batch_size: 48
+2023-10-13 23:29:20,435 [trainer.py] => weight_decay: 0.0005
+2023-10-13 23:29:20,435 [trainer.py] => min_lr: 0
+2023-10-13 23:29:20,435 [trainer.py] => optimizer: sgd
+2023-10-13 23:29:20,435 [trainer.py] => vpt_type: deep
+2023-10-13 23:29:20,435 [trainer.py] => prompt_token_num: 5
