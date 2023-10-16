@@ -64,39 +64,39 @@ class Learner(BaseLearner):
     def replace_fc_loss(self,trainloader, model, args):
         model = model.train()
 
-        for name, module in model.named_children():
-            print(name, module)
-
-        print("Before LoRA ...")
-        self.print_trainable_parameters(model)
-        
-        criterion = nn.CrossEntropyLoss()
-        # criterion = nn.NLLLoss(reduction='mean')
-        
-        # Optimizer Change
-        optimizer = optim.SGD(model.fc.parameters(), momentum=0.9, lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
-        # optimizer = optim.Adam(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
-        # optimizer = optim.AdamW(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
-        
-        # Scheduler Change
-        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
-        # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
-        
-        config = LoraConfig(
-                        r=16,
-                        lora_alpha=16,
-                        target_modules=["qkv"],
-                        lora_dropout=0.1,
-                        bias="none",
-                        modules_to_save=["fc"],
-                    )
-        
-        lora_model = get_peft_model(model, config)
-        print("After LoRA ...")
-        self.print_trainable_parameters(model)
-
         if self._cur_task == 0:
-            for epoch in range(self.args["tuned_epoch"]):
+            for name, module in model.named_children():
+                print(name, module)
+
+            print("Before LoRA ...")
+            self.print_trainable_parameters(model)
+
+            config = LoraConfig(
+                    r=16,
+                    lora_alpha=16,
+                    target_modules=["qkv"],
+                    lora_dropout=0.1,
+                    bias="none",
+                    # modules_to_save=["fc"],
+                )
+            
+            lora_model = get_peft_model(model, config)
+            print("After LoRA ...")
+            self.print_trainable_parameters(model)
+
+            criterion = nn.CrossEntropyLoss()
+            # criterion = nn.NLLLoss(reduction='mean')
+            
+            # Optimizer Change
+            optimizer = optim.SGD(lora_model.parameters(), momentum=0.9, lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
+            # optimizer = optim.Adam(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
+            # optimizer = optim.AdamW(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
+            
+            # Scheduler Change
+            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
+            # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
+            
+            for epoch in range(3*self.args["tuned_epoch"]):
                 for i, batch in enumerate(trainloader):
                     (_,data,label)=batch
                     data=data.cuda()
@@ -110,6 +110,11 @@ class Learner(BaseLearner):
 
                     loss.backward()
                     optimizer.step()
+
+                scheduler.step()
+                y_pred, y_true = self._eval_cnn(self.test_loader)
+                cnn_accy = self._evaluate(y_pred, y_true)
+                print('Epoch : ', epoch, 'Accuracy (CNN): ', cnn_accy["top1"])
             
             model = lora_model
 
