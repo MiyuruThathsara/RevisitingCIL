@@ -542,11 +542,11 @@ class SimpleVitNet(BaseNet):
                 weight = torch.cat([weight, initialize_weights])
                 # weight = torch.cat([weight, torch.zeros(nb_classes - nb_output, self.feature_dim).cuda()])
             fc.weight = nn.Parameter(weight)
-        del self.fc
-        # if cur_task !=0:
-        #   self.fc.original_module = fc
-        # else:
-        self.fc = fc
+        # del self.fc
+        if cur_task !=0:
+          self.fc.original_module = fc
+        else:
+            self.fc = fc
 
     def generate_fc(self, in_dim, out_dim):
         fc = CosineLinear(in_dim, out_dim)
