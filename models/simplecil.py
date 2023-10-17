@@ -83,12 +83,6 @@ class Learner(BaseLearner):
             lora_model = get_peft_model(model, config)
             print("After LoRA ...")
             self.print_trainable_parameters(lora_model)
-<<<<<<< HEAD
-=======
-
-            criterion = nn.CrossEntropyLoss()
-            # criterion = nn.NLLLoss(reduction='mean')
->>>>>>> e74daa5c9879ffab495a98a461dfbe4d784a355c
             
             # Optimizer Change
             optimizer = optim.SGD(lora_model.parameters(), momentum=0.9, lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
