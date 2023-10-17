@@ -531,9 +531,9 @@ class SimpleVitNet(BaseNet):
     def update_fc(self, nb_classes, nextperiod_initialization=None, cur_task=0):
         fc = self.generate_fc(self.feature_dim, nb_classes).cuda()
         if self.fc is not None:
-            nb_output = self.fc.original_module.out_features
-            weight = copy.deepcopy(self.fc.original_module.weight.data)
-            fc.sigma.data = self.fc.original_module.sigma.data
+            nb_output = self.fc.modules_to_save.default.out_features
+            weight = copy.deepcopy(self.fc.modules_to_save.default.weight.data)
+            fc.sigma.data = self.fc.modules_to_save.default.sigma.data
             if nextperiod_initialization is not None:
                 weight = torch.cat([weight, nextperiod_initialization])
             else:
@@ -545,6 +545,7 @@ class SimpleVitNet(BaseNet):
         # del self.fc
         if cur_task !=0:
           self.fc.original_module = fc
+          self.fc.modules_to_save.default = fc
         else:
             self.fc = fc
 

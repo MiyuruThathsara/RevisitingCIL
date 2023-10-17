@@ -99,7 +99,7 @@ class Learner(BaseLearner):
             scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
             # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
 
-            for epoch in range(self.args["tuned_epoch"]):
+            for epoch in range(10):
                 for i, batch in enumerate(trainloader):
                     (_,data,label)=batch
                     data=data.cuda()
@@ -121,65 +121,66 @@ class Learner(BaseLearner):
             
             model = lora_model
 
+        # else:
+            # optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
+
+            # criterion = nn.CrossEntropyLoss()
+            # # criterion = nn.NLLLoss(reduction='mean')  
+
+            # # Scheduler Change
+            # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
+            # # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
+
+            # self.print_trainable_parameters(model)
+
+            # for name, param in model.named_parameters():
+            #     print(f"Layer: {name}, Parameters: {param.numel()}, Shape: {param.shape}")
+
+
+            # for epoch in range(self.args["tuned_epoch"]):
+            #     for i, batch in enumerate(trainloader):
+            #         (_,data,label)=batch
+            #         data=data.cuda()
+            #         label=label.cuda()
+
+            #         optimizer.zero_grad()
+
+            #         outputs=model(data)
+            #         print(outputs["logits"].shape)
+            #         loss=criterion(outputs["logits"], label.long())
+
+            #         loss.backward()
+            #         optimizer.step()
+            #     scheduler.step()
+                
+            #     y_pred, y_true = self._eval_cnn(self.test_loader)
+            #     cnn_accy = self._evaluate(y_pred, y_true)
+            #     print('Epoch : ', epoch, 'Accuracy (CNN): ', cnn_accy["top1"])
+            
         else:
-            optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
-
-            criterion = nn.CrossEntropyLoss()
-            # criterion = nn.NLLLoss(reduction='mean')  
-
-            # Scheduler Change
-            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
-            # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
-
-            self.print_trainable_parameters(model)
-
-            for name, param in model.named_parameters():
-                print(f"Layer: {name}, Parameters: {param.numel()}, Shape: {param.shape}")
-
-
-            for epoch in range(self.args["tuned_epoch"]):
+            embedding_list = []
+            label_list = []
+            with torch.no_grad():
                 for i, batch in enumerate(trainloader):
+                    print(i)
                     (_,data,label)=batch
                     data=data.cuda()
                     label=label.cuda()
+                    embedding=model.convnet(data)
+                    embedding_list.append(embedding.cpu())
+                    label_list.append(label.cpu())
+            embedding_list = torch.cat(embedding_list, dim=0)
+            label_list = torch.cat(label_list, dim=0)
 
-                    optimizer.zero_grad()
-
-                    outputs=model(data)
-                    print(outputs["logits"].shape)
-                    loss=criterion(outputs["logits"], label.long())
-
-                    loss.backward()
-                    optimizer.step()
-                scheduler.step()
-                
-                y_pred, y_true = self._eval_cnn(self.test_loader)
-                cnn_accy = self._evaluate(y_pred, y_true)
-                print('Epoch : ', epoch, 'Accuracy (CNN): ', cnn_accy["top1"])
-            
-        # else:
-        #     embedding_list = []
-        #     label_list = []
-        #     with torch.no_grad():
-        #         for i, batch in enumerate(trainloader):
-        #             print(i)
-        #             (_,data,label)=batch
-        #             data=data.cuda()
-        #             label=label.cuda()
-        #             embedding=model.convnet(data)
-        #             embedding_list.append(embedding.cpu())
-        #             label_list.append(label.cpu())
-        #     embedding_list = torch.cat(embedding_list, dim=0)
-        #     label_list = torch.cat(label_list, dim=0)
-
-        #     class_list=np.unique(self.train_dataset.labels)
-        #     proto_list = []
-        #     for class_index in class_list:
-        #         # print('Replacing...',class_index)
-        #         data_index=(label_list==class_index).nonzero().squeeze(-1)
-        #         embedding=embedding_list[data_index]
-        #         proto=embedding.mean(0)
-        #         self._network.fc.original_module.weight.data[class_index]=proto
+            class_list=np.unique(self.train_dataset.labels)
+            proto_list = []
+            for class_index in class_list:
+                # print('Replacing...',class_index)
+                data_index=(label_list==class_index).nonzero().squeeze(-1)
+                embedding=embedding_list[data_index]
+                proto=embedding.mean(0)
+                self._network.fc.original_module.weight.data[class_index]=proto
+                self._network.fc.modules_to_save.default.weight.data[class_index]=proto
 
             # print("Training Started ...") 
             # for epoch in range(2):
