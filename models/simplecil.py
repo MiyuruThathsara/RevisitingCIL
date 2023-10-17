@@ -156,40 +156,39 @@ class Learner(BaseLearner):
             #     y_pred, y_true = self._eval_cnn(self.test_loader)
             #     cnn_accy = self._evaluate(y_pred, y_true)
             #     print('Epoch : ', epoch, 'Accuracy (CNN): ', cnn_accy["top1"])
-        elif (self._cur_task%3 == 0):
-            # Optimizer Change
-            optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
-            # optimizer = optim.Adam(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
-            # optimizer = optim.AdamW(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
+        # elif (self._cur_task%3 == 0):
+        #     # Optimizer Change
+        #     optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
+        #     # optimizer = optim.Adam(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
+        #     # optimizer = optim.AdamW(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
 
-            criterion = nn.CrossEntropyLoss()
-            # criterion = nn.NLLLoss(reduction='mean')  
+        #     criterion = nn.CrossEntropyLoss()
+        #     # criterion = nn.NLLLoss(reduction='mean')  
 
-            # Scheduler Change
-            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
-            # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
+        #     # Scheduler Change
+        #     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
+        #     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
 
-            for epoch in range(5):
-                for i, batch in enumerate(trainloader):
-                    (_,data,label)=batch
-                    data=data.cuda()
-                    label=label.cuda()
+        #     for epoch in range(5):
+        #         for i, batch in enumerate(trainloader):
+        #             (_,data,label)=batch
+        #             data=data.cuda()
+        #             label=label.cuda()
 
-                    optimizer.zero_grad()
+        #             optimizer.zero_grad()
 
-                    outputs=model(data)
-                    print(outputs["logits"].shape)
-                    loss=criterion(outputs["logits"], label.long())
+        #             outputs=model(data)
+        #             print(outputs["logits"].shape)
+        #             loss=criterion(outputs["logits"], label.long())
 
-                    loss.backward()
-                    optimizer.step()
-                scheduler.step()
+        #             loss.backward()
+        #             optimizer.step()
+        #         scheduler.step()
                 
-                y_pred, y_true = self._eval_cnn(self.test_loader)
-                cnn_accy = self._evaluate(y_pred, y_true)
-                print('Epoch : ', epoch, 'Accuracy (CNN): ', cnn_accy["top1"])
+        #         y_pred, y_true = self._eval_cnn(self.test_loader)
+        #         cnn_accy = self._evaluate(y_pred, y_true)
+        #         print('Epoch : ', epoch, 'Accuracy (CNN): ', cnn_accy["top1"])
             
-            model = lora_model
         else:
             embedding_list = []
             label_list = []
