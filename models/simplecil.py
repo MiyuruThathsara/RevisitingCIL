@@ -65,8 +65,8 @@ class Learner(BaseLearner):
         model = model.train()
 
         if self._cur_task == 0:
-            for name, module in model.named_children():
-                print(name, module)
+            # for name, module in model.named_children():
+            #     print(name, module)
 
             print("Before LoRA ...")
             self.print_trainable_parameters(model)
@@ -83,7 +83,10 @@ class Learner(BaseLearner):
             lora_model = get_peft_model(model, config)
             print("After LoRA ...")
             self.print_trainable_parameters(lora_model)
-            
+
+            for name, param in lora_model.named_parameters():
+                print(f"Layer: {name}, Parameters: {param.numel()}, Shape: {param.shape}")
+
             # Optimizer Change
             optimizer = optim.SGD(lora_model.parameters(), momentum=0.9, lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
             # optimizer = optim.Adam(model.fc.parameters(), lr=self.args["init_lr"], weight_decay=self.args["weight_decay"])
@@ -129,6 +132,10 @@ class Learner(BaseLearner):
             # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
 
             self.print_trainable_parameters(model)
+
+            for name, param in model.named_parameters():
+                print(f"Layer: {name}, Parameters: {param.numel()}, Shape: {param.shape}")
+
 
             for epoch in range(self.args["tuned_epoch"]):
                 for i, batch in enumerate(trainloader):
