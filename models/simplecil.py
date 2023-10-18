@@ -97,7 +97,7 @@ class Learner(BaseLearner):
 
             # Scheduler Change
             scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.args['tuned_epoch'], eta_min=self.args["min_lr"])
-            # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5)
+            scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=self.args['tuned_epoch'], gamma=0.5)
 
             for epoch in range(20):
                 for i, batch in enumerate(trainloader):
